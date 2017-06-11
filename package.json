@@ -1,0 +1,28 @@
+{
+    "name": "Slacker",
+    "version": "1.0.0",
+    "description": "A New UI for Slack",
+    "main": "app.js",
+    "scripts": {
+        "start": "babel-node app.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@gitlab.com/psyked1/Slacker.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://gitlab.com/psyked1/Slacker/issues"
+    },
+    "homepage": "https://gitlab.com/psyked1/Slacker#README",
+    "dependencies": {
+        "@slack/client": "^3.10.0",
+        "babel-core": "^6.25.0",
+        "babel-polyfill": "^6.23.0",
+        "babel-preset-es2015": "^6.24.1"
+    },
+    "engine": "node >= 6.9.4"
+}
