@@ -9,29 +9,16 @@ const STATES = { ACTIVE: 'active', AWAY: 'away' }
 let users
 
 slack.on(CLIENT_EVENTS.RTM.AUTHENTICATED, function (rtmStartData) {
-    log.log(`Welcome to Slack. You are logged in as @${rtmStartData.self.name} of ${rtmStartData.team.name}`.blue)
+    log.log(`[${new Date().toUTCString()}] `.white + `Welcome to Slack. You are logged in as @${rtmStartData.self.name} of ${rtmStartData.team.name}`.blue)
 
     users = rtmStartData.users.filter(user => !user.is_restricted).filter(user => !user.is_bot).filter(user => !!user.real_name)
 
     let activeUsers = users.filter(user => !user.is_bot).filter(user => user.presence === STATES.ACTIVE)
     let awayUsers = users.filter(user => !user.is_bot).filter(user => user.presence === STATES.AWAY)
 
-    log.log(`${activeUsers.length} users active and ${awayUsers.length} users away`.yellow)
-    if (activeUsers.length) {
-        log.log(`Users online: ${activeUsers.map(user => user.real_name).join(', ')}`.yellow)
-    }
+    log.log(`[${new Date().toUTCString()}] `.white + `${activeUsers.length} users active and ${awayUsers.length} users away`.yellow)
 
-    onlineUsers.content = users.map((user) => {
-        if (user.presence === STATES.ACTIVE) {
-            return `•  ${[user.real_name]}`.green
-        }
-    }).filter(message => !!message).join('\n')
-
-    offlineUsers.content = users.map((user) => {
-        if (user.presence !== STATES.ACTIVE) {
-            return `◦  ${[user.real_name]}`.yellow
-        }
-    }).filter(message => !!message).join('\n')
+    updateView()
 })
 
 slack.on(RTM_EVENTS.PRESENCE_CHANGE, function (changedUser) {
@@ -40,11 +27,18 @@ slack.on(RTM_EVENTS.PRESENCE_CHANGE, function (changedUser) {
     fullUserDetails.presence = changedUser.presence
 
     if (changedUser.presence === STATES.AWAY) {
-        log.log(`${fullUserDetails.real_name} has gone ${changedUser.presence}`.red)
+        log.log(`[${new Date().toUTCString()}] `.white + `${fullUserDetails.real_name} has gone ${changedUser.presence}`.red)
     } else {
-        log.log(`${fullUserDetails.real_name} has become ${changedUser.presence}`.green)
+        log.log(`[${new Date().toUTCString()}] `.white + `${fullUserDetails.real_name} has become ${changedUser.presence}`.green)
     }
 
+    updateView()
+})
+
+slack.login()
+
+function updateView() {
+    
     onlineUsers.content = users.map((user) => {
         if (user.presence === STATES.ACTIVE) {
             return `•  ${[user.real_name]}`.green
@@ -56,9 +50,8 @@ slack.on(RTM_EVENTS.PRESENCE_CHANGE, function (changedUser) {
             return `◦  ${[user.real_name]}`.yellow
         }
     }).filter(message => !!message).join('\n')
-})
 
-slack.login()
+}
 
 var blessed = require('blessed')
 var contrib = require('blessed-contrib')
