@@ -24,12 +24,18 @@ slack.on(CLIENT_EVENTS.RTM.AUTHENTICATED, function (rtmStartData) {
 slack.on(RTM_EVENTS.PRESENCE_CHANGE, function (changedUser) {
     let fullUserDetails = users.filter(user => user.id === changedUser.user)[0]
     if (!fullUserDetails) { return }
-    fullUserDetails.presence = changedUser.presence
+    
+    users = users.map((user) => {
+        if(user.id === changedUser.user){
+            user.presence = changedUser.presence
+        }
+        return user
+    })
 
     if (changedUser.presence === STATES.AWAY) {
-        log.log(`[${new Date().toUTCString()}] `.white + `${fullUserDetails.real_name} has gone ${changedUser.presence}`.red)
+        log.log(`[${new Date().toUTCString()}] `.white + `${fullUserDetails.real_name} has gone ${fullUserDetails.presence}`.red)
     } else {
-        log.log(`[${new Date().toUTCString()}] `.white + `${fullUserDetails.real_name} has become ${changedUser.presence}`.green)
+        log.log(`[${new Date().toUTCString()}] `.white + `${fullUserDetails.real_name} has become ${fullUserDetails.presence}`.green)
     }
 
     updateView()
@@ -39,17 +45,19 @@ slack.login()
 
 function updateView() {
     
-    onlineUsers.content = users.map((user) => {
+    onlineUsers.setContent(users.map((user) => {
         if (user.presence === STATES.ACTIVE) {
             return `•  ${[user.real_name]}`.green
         }
-    }).filter(message => !!message).join('\n')
+    }).filter(message => !!message).join('\n'))
 
-    offlineUsers.content = users.map((user) => {
+    offlineUsers.setContent(users.map((user) => {
         if (user.presence !== STATES.ACTIVE) {
             return `◦  ${[user.real_name]}`.yellow
         }
-    }).filter(message => !!message).join('\n')
+    }).filter(message => !!message).join('\n'))
+
+    screen.render();
 
 }
 
@@ -61,9 +69,9 @@ var screen = blessed.screen()
 var grid = new contrib.grid({ rows: 12, cols: 12, screen: screen })
 
 //grid.set(row, col, rowSpan, colSpan, obj, opts)
-var log = grid.set(0, 0, 12, 6, contrib.log, { label: 'Activity Log' })
-var onlineUsers = grid.set(0, 6, 12, 3, blessed.box, { label: 'Online Users', content: '' })
-var offlineUsers = grid.set(0, 9, 12, 3, blessed.box, { label: 'Offline Users', content: '' })
+var log = grid.set(0, 0, 12, 6, contrib.log, { label: 'Activity Log', scrollable:true })
+var onlineUsers = grid.set(0, 6, 12, 3, blessed.box, { label: 'Online Users', content: '', scrollable:true })
+var offlineUsers = grid.set(0, 9, 12, 3, blessed.box, { label: 'Offline Users', content: '', scrollable:true })
 
 screen.key(['escape', 'q', 'C-c'], function (ch, key) {
     return process.exit(0);
